@@ -32,7 +32,7 @@ uexact = @(x) exp(-D*k^2)*sin(k*x);
 U0(1) = g0;
 
 for x = 2:n-1
-    U0(x) = sin(k*x);
+    U0(x) = sin(k*x*dx);
 end
 U0(n) = gL;
 Ugraph = U0;
@@ -75,7 +75,6 @@ for t=2:n
     U0 = Un;
 end
 
-
-% fplot(uexact)
+mesh(t,x,u)
 % axis([0,L,0,T])
 % grid on

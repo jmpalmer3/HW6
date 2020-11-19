@@ -39,9 +39,6 @@ Un(n)=gL;
 
 %U0(row,col) = 0
 
-lam = D*dt/(dx)^2
-
-
 
 %
 %[ a -b  0  0 
@@ -50,20 +47,16 @@ lam = D*dt/(dx)^2
 %  0  0 -c  a ] 
 
 %time loop 
-for k=2:n
+for k=2:nt
     for i=1:n-2 
         if i == 1
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(i);
+            f(i)=c*Uo(i)+2*(1-c)*Uo(i+1)+b*Uo(i+2)+c*Un(i);
         elseif i == n-2
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(n);
+            f(i)=c*Uo(i)+2*(1-c)*Uo(i+1)+b*Uo(i+2)+c*Un(n);
         else
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2);
-        end
     end
     
-    b = lam*ones(n-3,1)
-    c = b
-    a = (2*(1+lam))*ones(n-2,1)
+    
     
 end
 

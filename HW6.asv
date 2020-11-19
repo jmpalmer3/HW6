@@ -33,11 +33,14 @@ for x = 2:n-1
     U0(x) = sin(k*x);
 end
 U0(n) = gL;
-
+Ugraph = U0;
 Un(1)=g0; 
 Un(n)=gL;
 
 %U0(row,col) = 0
+
+lam = D*dt/(dx)^2;
+
 
 
 %
@@ -47,17 +50,32 @@ Un(n)=gL;
 %  0  0 -c  a ] 
 
 %time loop 
-for k=2:nt
+for t=2:n
     for i=1:n-2 
         if i == 1
-            f(i)=c*Uo(i)+2*(1-c)*Uo(i+1)+b*Uo(i+2)+c*Un(i);
+            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(i);
         elseif i == n-2
-            f(i)=c*Uo(i)+2*(1-c)*Uo(i+1)+b*Uo(i+2)+c*Un(n);
+            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(n);
         else
+            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2);
+        end
     end
     
+    %set up coefficients
+    b = lam*ones(n-3,1);
+    c = b;
+    a = (2*(1+lam))*ones(n-2,1);
+    %put into matrix
+    matrix = diag(a)+ diag(-b,1)+ diag(-c,-1);
     
+    %divide by function values
+    Ufinal = matrix\f';
+    %make vector for new row
+    Un=[Un(1),Ufinal',Un(n)];
+    %Add to graphing 
+    Ugraph(t,:)=Un;
     
+    U0 = Un;
 end
 
 

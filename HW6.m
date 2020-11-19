@@ -24,7 +24,9 @@ D = 0.1;    %coefficient
 g0 = 0;
 gL = g0;
 U0 = zeros(1, n);
+lam = D*dt/(dx)^2;
 uexact = @(x) exp(-D*k^2)*sin(k*x);
+
 
 %boundary conditions
 U0(1) = g0;
@@ -33,15 +35,9 @@ for x = 2:n-1
     U0(x) = sin(k*x);
 end
 U0(n) = gL;
-
+Ugraph = U0;
 Un(1)=g0; 
 Un(n)=gL;
-
-%U0(row,col) = 0
-
-lam = D*dt/(dx)^2
-
-
 
 %
 %[ a -b  0  0 
@@ -50,7 +46,7 @@ lam = D*dt/(dx)^2
 %  0  0 -c  a ] 
 
 %time loop 
-for k=2:n
+for t=2:n
     for i=1:n-2 
         if i == 1
             f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(i);
@@ -61,10 +57,22 @@ for k=2:n
         end
     end
     
-    b = lam*ones(n-3,1)
-    c = b
-    a = (2*(1+lam))*ones(n-2,1)
+    %set up coefficients
+    b = lam*ones(n-3,1);
+    c = b;
+    a = (2*(1+lam))*ones(n-2,1);
+    %put into matrix
+    matrix = diag(a)+ diag(-b,1)+ diag(-c,-1);
     
+    %divide by function values
+    Ufinal = matrix\f';
+    %make vector for new row
+    Un=[Un(1),Ufinal',Un(n)];
+    %Add to graphing value
+    Ugraph(t,:)=Un;
+    
+    %reset U0 with new value
+    U0 = Un;
 end
 
 

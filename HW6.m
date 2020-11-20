@@ -46,13 +46,13 @@ Un(n+1)=gL;
 
 %time loop 
 for t=2:n+1
-    for i=1:n-1 
-        if i == 1
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(i);
-        elseif i == n-1
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(n);
+    for j=1:n-1 
+        if j == 1
+            f(j)=lam*U0(j)+2*(1-lam)*U0(j+1)+lam*U0(j+2)+lam*Un(j);
+        elseif j == n-1
+            f(j)=lam*U0(j)+2*(1-lam)*U0(j+1)+lam*U0(j+2)+lam*Un(n);
         else
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2);
+            f(j)=lam*U0(j)+2*(1-lam)*U0(j+1)+lam*U0(j+2);
         end
     end
     
@@ -82,16 +82,17 @@ for t = 1:n+1
     end
 end
 
-% uexact = @(x) exp(-D*k^2*1)*sin(k*x);
-% x = (0:10/9:10)*dx;
-% 
-% plot(x,Ugraph(1,:));
-% hold on
-% fplot(uexact)
-% mesh(t,x,Ugraph)
-% axis([0,L,0,T])
-% grid on
+%uexact = @(x) exp(-D*k^2*1)*sin(k*x);
+x = (0:1:10)*dx;
 
+plot(x,Ugraph(5,:));
+hold on
+plot(x,uexactFunction(5,:));
+axis([0,L,0,1])
+grid on
+xlabel('Length [x]')
+ylabel('Time [t]')
+title('Crank-Nicolson at time = 5')
 
 %% Part b
 
@@ -109,8 +110,8 @@ dx = L/n;
 k = 1;
 D = 0.1;    %coefficient
 fx = 0;
-w = 0.1/dt;
-%Fxt = (w*cos(w*t)+D*k^2*sin(w*t))*cos(k*x);
+w = 1/dt;
+%Fxt = @(x) (w*cos(w*t)+D*k^2*sin(w*t))*cos(k*x);
 lam = D*dt/(dx)^2;
 
 
@@ -129,15 +130,6 @@ Un(n+1)=U0(n+1);
 
 %time loop 
 for t=2:n+1
-    for i=1:n-1 
-        if i == 1
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(i);
-        elseif i == n-1
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2)+lam*Un(n);
-        else
-            f(i)=lam*U0(i)+2*(1-lam)*U0(i+1)+lam*U0(i+2);
-        end
-    end
     
     %set up coefficients
     b = lam*ones(n-2,1);
@@ -146,8 +138,22 @@ for t=2:n+1
     %put into matrix
     matrix = diag(a)+ diag(-b,1)+ diag(-c,-1);
     
+    for j=1:n-1 
+        if j == 1
+            f(j)=lam*U0(j)+2*(1-lam)*U0(j+1)+lam*U0(j+2)+lam*Un(j);
+        elseif j == n-1
+            f(j)=lam*U0(j)+2*(1-lam)*U0(j+1)+lam*U0(j+2)+lam*Un(n);
+        else
+            f(j)=lam*U0(j)+2*(1-lam)*U0(j+1)+lam*U0(j+2);
+        end
+    end
+    
     %divide by function values
     Ufinal = matrix\f';
+    
+    for j=1:n-1 
+        Ufinal(j) = Ufinal(j) + (w*cos(w*t)+D*k^2*sin(w*t))*cos(k*j*dx);
+    end
     %make vector for new row
     Un=[Un(1),Ufinal',Un(n+1)];
     %Add to graphing value
@@ -156,12 +162,23 @@ for t=2:n+1
     %reset U0 with new value
     U0 = Un;
     U0(1) = sin(w*t);
-    U0(n+1) = sin(w*t)*cos(k*t);
+    U0(n+1) = sin(w*t)*cos(k*L*dx);
     Un = U0;
 end
+
+Ugraph(1,1) = 0;
+Ugraph(1,n+1) = 0;
 
 for t = 1:n+1
     for x = 1:n+1
         uexactFunction(t,x) = sin(w*(t-1))*cos(k*(x-1)*dx);
     end
 end
+
+e = 0;
+for t = 1:n+1
+    for x = 1:n+1
+        e = (Ugraph(t,x)-uexactFunction(t,x))/uexactFunction(t,x);
+    end
+end
+e = 1/n*e
